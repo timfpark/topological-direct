@@ -4,7 +4,7 @@ class DirectConnection extends Connection {
     constructor(config) {
         super(config);
 
-        this.waitingDequeue = null;
+        this.awaitingDequeue = [];
     }
 
     start(callback) {
@@ -17,11 +17,12 @@ class DirectConnection extends Connection {
     }
 
     enqueue(messages, callback) {
-        console.log(`${this.name}: enqueuing ${JSON.stringify(messages)}`);
+        console.log(`${this.id}: enqueuing ${JSON.stringify(messages)}`);
         this.messages = this.messages.concat(messages);
 
-        if (this.waitingDequeue) {
-            this.dequeue(this.waitingDequeue);
+        if (this.awaitingDequeue.length > 0) {
+            let oldestWaiter = this.awaitingDequeue.shift();
+            this.dequeue(oldestWaiter);
         }
 
         return callback();
@@ -30,10 +31,10 @@ class DirectConnection extends Connection {
     dequeue(callback) {
         if (this.messages.length > 0) {
             let message = this.messages.shift();
-            console.log(`${this.name}: dequeuing ${JSON.stringify(message)}`);
+            console.log(`${this.id}: dequeuing ${JSON.stringify(message)}`);
             return callback(null, message);
         } else {
-            this.waitingDequeue = callback;
+            this.awaitingDequeue.push(callback);
         }
     }
 }
