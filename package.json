@@ -1,0 +1,14 @@
+{
+  "name": "topological-direct",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "Tim Park",
+  "license": "MIT",
+  "dependencies": {
+    "topological": "^1.0.4"
+  }
+}
