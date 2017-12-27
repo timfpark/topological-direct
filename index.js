@@ -17,7 +17,7 @@ class DirectConnection extends Connection {
     }
 
     enqueue(messages, callback) {
-        console.log(`${this.id}: enqueuing ${JSON.stringify(messages)}`);
+        //console.log(`${this.id}: enqueuing ${JSON.stringify(messages)}`);
         this.messages = this.messages.concat(messages);
 
         if (this.awaitingDequeue.length > 0) {
@@ -31,7 +31,7 @@ class DirectConnection extends Connection {
     dequeue(callback) {
         if (this.messages.length > 0) {
             let message = this.messages.shift();
-            console.log(`${this.id}: dequeuing ${JSON.stringify(message)}`);
+            //console.log(`${this.id}: dequeuing ${JSON.stringify(message)}`);
             return callback(null, message);
         } else {
             this.awaitingDequeue.push(callback);
