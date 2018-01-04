@@ -1,15 +1,18 @@
-const { Connection } = require("topological");
+const async = require('async'),
+      { Connection } = require("topological");
 
 class DirectConnection extends Connection {
     constructor(config) {
         super(config);
 
-        this.awaitingDequeue = [];
+        this.awaitingMessage = [];
     }
 
     start(callback) {
-        this.messages = [];
-        return callback();
+        super.start(err => {
+            this.messages = [];
+            return callback(err);
+        });
     }
 
     failed(message, callback) {
@@ -17,24 +20,39 @@ class DirectConnection extends Connection {
     }
 
     enqueue(messages, callback) {
-        //console.log(`${this.id}: enqueuing ${JSON.stringify(messages)}`);
+        console.log(`${this.id}: enqueuing ${JSON.stringify(messages)}`);
         this.messages = this.messages.concat(messages);
 
-        if (this.awaitingDequeue.length > 0) {
-            let oldestWaiter = this.awaitingDequeue.shift();
-            this.dequeue(oldestWaiter);
+        if (this.awaitingMessage.length > 0) {
+            let oldestRequest = this.awaitingMessage.shift();
+            this.dequeue(oldestRequest);
         }
 
         return callback();
     }
 
+    stream(callback) {
+        async.whilst(
+            () => {
+                return this.started;
+            }, iterationCallback => {
+                this.dequeue( (err, message) => {
+                    callback(err, message);
+                    return iterationCallback();
+                });
+            }, err => {
+                console.log(`${this.id}: message loop for input stopping. err: ${err}`);
+            }
+        );
+    }
+
     dequeue(callback) {
-        if (this.messages.length > 0) {
+        if (!this.paused && this.messages.length > 0) {
             let message = this.messages.shift();
-            //console.log(`${this.id}: dequeuing ${JSON.stringify(message)}`);
+            console.log(`${this.id}: dequeuing ${JSON.stringify(message)}`);
             return callback(null, message);
         } else {
-            this.awaitingDequeue.push(callback);
+            this.awaitingMessage.push(callback);
         }
     }
 }

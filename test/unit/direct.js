@@ -4,7 +4,7 @@ const fixtures = require('../fixtures');
 describe('DirectConnection', function() {
     it('can queue and dequeue messages', done => {
          fixtures.connection.start(err => {
-            fixtures.connection.dequeue((err, message) => {
+            fixtures.connection.stream((err, message) => {
                 assert(!err);
                 assert(message);
                 assert(message.body.number, 1);
