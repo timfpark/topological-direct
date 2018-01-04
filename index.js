@@ -23,12 +23,16 @@ class DirectConnection extends Connection {
         console.log(`${this.id}: enqueuing ${JSON.stringify(messages)}`);
         this.messages = this.messages.concat(messages);
 
+        this.handleAnyWaitingRequests();
+
+        return callback();
+    }
+
+    handleAnyWaitingRequests() {
         if (this.awaitingMessage.length > 0) {
             let oldestRequest = this.awaitingMessage.shift();
             this.dequeue(oldestRequest);
         }
-
-        return callback();
     }
 
     stream(callback) {
@@ -54,6 +58,16 @@ class DirectConnection extends Connection {
         } else {
             this.awaitingMessage.push(callback);
         }
+    }
+
+    resume(callback) {
+        super.resume(err => {
+            if (err) return callback(err);
+
+            this.handleAnyWaitingRequests();
+
+            if (callback) return callback();
+        });
     }
 }
 
