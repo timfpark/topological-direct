@@ -20,7 +20,7 @@ class DirectConnection extends Connection {
     }
 
     enqueue(messages, callback) {
-        console.log(`${this.id}: enqueuing ${JSON.stringify(messages)}`);
+        this.log.debug(`${this.id}: enqueuing ${JSON.stringify(messages)}`);
         this.messages = this.messages.concat(messages);
 
         this.handleAnyWaitingRequests();
@@ -45,7 +45,7 @@ class DirectConnection extends Connection {
                     return iterationCallback();
                 });
             }, err => {
-                console.log(`${this.id}: message loop for input stopping. err: ${err}`);
+                this.log.info(`${this.id}: message loop for input stopping. err: ${err}`);
             }
         );
     }
@@ -53,7 +53,7 @@ class DirectConnection extends Connection {
     dequeue(callback) {
         if (!this.paused && this.messages.length > 0) {
             let message = this.messages.shift();
-            console.log(`${this.id}: dequeuing ${JSON.stringify(message)}`);
+            this.log.debug(`${this.id}: dequeuing ${JSON.stringify(message)}`);
             return callback(null, message);
         } else {
             this.awaitingMessage.push(callback);
